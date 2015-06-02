@@ -32299,13 +32299,49 @@ module.exports = require('./lib/React');
 
 },{"./lib/React":101}],229:[function(require,module,exports){
 (function() {
-  var Board, Button, Panel, React, Tile, classSet, ref;
+  var Board, Button, ButtonGroup, Panel, PickTurn, React, Tile, classSet, ref;
 
   React = require('react');
 
-  ref = require('react-bootstrap'), Panel = ref.Panel, Button = ref.Button;
+  ref = require('react-bootstrap'), Panel = ref.Panel, Button = ref.Button, ButtonGroup = ref.ButtonGroup;
 
   classSet = require('classnames');
+
+  PickTurn = React.createClass({
+    getInitialState: function() {
+      return {
+        picked: false
+      };
+    },
+    startFirst: function() {
+      this.setState({
+        picked: true
+      });
+      this.props.emitter.emit('start-first');
+    },
+    startSecond: function() {
+      this.setState({
+        picked: true
+      });
+      this.props.emitter.emit('start-second');
+    },
+    render: function() {
+      return React.createElement("div", {
+        "className": "turn-pick-container"
+      }, React.createElement(Panel, {
+        "bsStyle": 'primary'
+      }, React.createElement("div", {
+        "className": "turn-pick-message"
+      }, (!this.state.picked ? React.createElement("p", null, "Start first?") : React.createElement("p", null, "Waiting for opponent")))), React.createElement(ButtonGroup, {
+        "justified": true,
+        "className": "turn-pick-buttons"
+      }, React.createElement(ButtonGroup, null, React.createElement(Button, {
+        "onClick": this.startFirst
+      }, "Start First")), React.createElement(ButtonGroup, null, React.createElement(Button, {
+        "onClick": this.startSecond
+      }, "Start Second"))));
+    }
+  });
 
 
   /*
@@ -32319,33 +32355,33 @@ module.exports = require('./lib/React');
     getInitialState: function() {
       return {
         move: null,
-        AIMove: null
+        AIMove: this.props.initAI || null
       };
     },
+    playerMove: function(num) {
+      return this.setState({
+        move: num,
+        AIMove: null
+      });
+    },
+    AIMove: function(num) {
+      return this.setState({
+        move: null,
+        AIMove: num
+      });
+    },
     componentDidMount: function() {
-      this.props.emitter.on('player-move', (function(_this) {
-        return function(num) {
-          return _this.setState({
-            move: num,
-            AIMove: null
-          });
-        };
-      })(this));
-      return this.props.emitter.on('ai-move', (function(_this) {
-        return function(num) {
-          return _this.setState({
-            move: null,
-            AIMove: num
-          });
-        };
-      })(this));
+      return this.props.emitter.on('player-move', this.playerMove).on('ai-move', this.AIMove);
+    },
+    componentWillUnmount: function() {
+      return this.props.emitter.removeListener('player-move', this.playerMove).removeListener('ai-move', this.AIMove);
     },
     restart: function() {
       this.setState({
         move: null,
         AIMove: null
       });
-      return this.props.emitter.emit("restart");
+      this.props.emitter.emit("restart");
     },
     render: function() {
       var i;
@@ -32356,7 +32392,7 @@ module.exports = require('./lib/React');
         "bsStyle": 'primary'
       }, (this.props.gameState.end ? React.createElement("div", null, React.createElement("p", null, "Game Over"), React.createElement(Button, {
         "onClick": this.restart
-      }, "Restart")) : this.state.move !== null ? React.createElement("p", null, "\t\t      \t\t\tYou filled ", this.state.move, ".\n\t\t      \t\t\tWaiting for player 2.") : this.state.AIMove ? React.createElement("p", null, "Player 2 filled ", this.state.AIMove) : React.createElement("p", null, "Pick a box to fill"))), React.createElement("svg", {
+      }, "Restart")) : this.state.move !== null ? React.createElement("p", null, "\t\t      \t\t\tYou filled ", this.state.move, ".\n\t\t      \t\t\tWaiting for player ", this.props.otherPlayer, ".") : this.state.AIMove ? React.createElement("p", null, "Player ", this.props.otherPlayer, " filled ", this.state.AIMove) : React.createElement("p", null, "Pick a box to fill"))), React.createElement("svg", {
         "viewBox": "0 0 600 600",
         "width": "100%",
         "height": "100%",
@@ -32457,38 +32493,50 @@ module.exports = require('./lib/React');
     }
   });
 
-  module.exports = Board;
+  module.exports = {
+    Board: Board,
+    PickTurn: PickTurn
+  };
 
 }).call(this);
 
 },{"classnames":4,"react":228,"react-bootstrap":61}],230:[function(require,module,exports){
 (function() {
-  var AI, Board, EventEmitter, GameState, React, emitter, player2, ref, render, state;
+  var AI, Board, EventEmitter, GameState, PickTurn, React, emitter, otherPlayer, player2, ref, ref1, renderBoard, renderPickTurn, state;
 
   React = require('react');
 
   ref = require('./tictactoe'), GameState = ref.GameState, AI = ref.AI;
 
-  Board = require('./board');
+  ref1 = require('./board'), Board = ref1.Board, PickTurn = ref1.PickTurn;
 
   EventEmitter = require('events').EventEmitter;
 
   emitter = new EventEmitter();
 
+  state = null;
+
+  otherPlayer = null;
+
   player2 = new AI(emitter);
 
-  state = GameState.initState();
-
-  render = function(state) {
+  renderBoard = function(state) {
     return React.render(React.createElement(Board, {
       "gameState": state,
+      "emitter": emitter,
+      "otherPlayer": otherPlayer
+    }), document.getElementById('main_content_wrap'));
+  };
+
+  renderPickTurn = function() {
+    return React.render(React.createElement(PickTurn, {
       "emitter": emitter
-    }), document.getElementById('tictactoe'));
+    }), document.getElementById('main_content_wrap'));
   };
 
   emitter.on('player-move', function(num) {
     state.doMove(num);
-    render(state);
+    renderBoard(state);
     if (!state.end) {
       return player2.nextMove(state);
     }
@@ -32496,15 +32544,27 @@ module.exports = require('./lib/React');
 
   emitter.on('ai-move', function(num) {
     state.doMove(num);
-    return render(state);
+    return renderBoard(state);
   });
 
   emitter.on("restart", function() {
-    state = GameState.initState();
-    return render(state);
+    return renderPickTurn();
   });
 
-  render(state);
+  emitter.on("start-first", function() {
+    state = GameState.initState(1);
+    otherPlayer = 2;
+    return renderBoard(state);
+  });
+
+  emitter.on("start-second", function() {
+    console.log('second');
+    state = GameState.initState(2);
+    otherPlayer = 1;
+    return player2.nextMove(state);
+  });
+
+  renderPickTurn();
 
 }).call(this);
 
@@ -32677,20 +32737,21 @@ module.exports = require('./lib/React');
       return new GameState(parsed.board, parsed.turn);
     };
 
-    GameState.initState = function() {
-      return new GameState([0, 0, 0, 0, 0, 0, 0, 0, 0], 0);
+    GameState.initState = function(player) {
+      return new GameState([0, 0, 0, 0, 0, 0, 0, 0, 0], 0, player);
     };
 
-    function GameState(board1, turn) {
+    function GameState(board1, turn, player1) {
       this.board = board1;
       this.turn = turn;
+      this.player = player1;
       this.lastMove = null;
       this.winTiles = null;
       this.end = false;
     }
 
     GameState.prototype.canMove = function() {
-      return this.turn % 2 === 0;
+      return (this.turn % 2) + 1 === this.player;
     };
 
     GameState.prototype.isLegalMove = function(move) {
@@ -32717,7 +32778,6 @@ module.exports = require('./lib/React');
     AI.prototype.nextMove = Promise.method(function(state) {
       var next;
       next = minimax(state.board, state.turn, 0);
-      console.log("AI moved");
       return Promise.delay((Math.floor(Math.random() * 500)) + 1000).then((function(_this) {
         return function() {
           return _this.emitter.emit('ai-move', next.filled);

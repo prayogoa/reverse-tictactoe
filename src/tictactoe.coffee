@@ -109,16 +109,17 @@ class GameState
 	@parse: (str) ->
 		parsed = JSON.parse str
 		return new GameState parsed.board, parsed.turn
-	@initState: ->
-		return new GameState([0,0,0,0,0,0,0,0,0], 0)
 
-	constructor: (@board, @turn) ->
+	@initState: (player) ->
+		return new GameState([0,0,0,0,0,0,0,0,0], 0, player)
+
+	constructor: (@board, @turn, @player) ->
 		@lastMove = null
 		@winTiles = null
 		@end = false
 
 	canMove: ->
-		return @turn % 2 is 0
+		return (@turn % 2) + 1 is @player
 
 	isLegalMove: (move) ->
 		return legal_move(@board, move)
@@ -135,7 +136,6 @@ class AI
 
 	nextMove: Promise.method (state) ->
 		next = minimax state.board, state.turn, 0
-		console.log "AI moved"
 		Promise.delay (Math.floor Math.random() * 500) + 1000
 		.then =>
 			@emitter.emit 'ai-move', next.filled
