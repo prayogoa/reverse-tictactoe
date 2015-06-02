@@ -15,10 +15,10 @@ js = browserify(js, {
 
 js = pickFiles(js, {
   srcDir: '/',
-  destDir: 'js'
+  destDir: 'javascripts'
 });
 
-var css = compileSass(['sass'], '/index.sass', '/css/index.css');
+var css = compileSass(['sass'], '/index.sass', '/stylesheets/index.css');
 css = autoprefixer(css, {cascade:true});
 
 var index = pickFiles('public', {
