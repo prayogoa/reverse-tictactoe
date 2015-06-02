@@ -1,0 +1,5 @@
+node_modules
+tmp
+www
+*.yaml
+bower_components

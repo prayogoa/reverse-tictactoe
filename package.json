@@ -1,0 +1,29 @@
+{
+  "name": "tictactoe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.9.27",
+    "bootstrap-sass": "^3.3.4",
+    "broccoli": "^0.16.3",
+    "broccoli-autoprefixer": "^3.0.0",
+    "broccoli-browserify": "^0.1.0",
+    "broccoli-cjsx": "0.0.2",
+    "broccoli-coffee": "^0.4.1",
+    "broccoli-funnel": "^0.2.3",
+    "broccoli-merge-trees": "^0.2.1",
+    "broccoli-sass": "^0.6.6",
+    "classnames": "^2.1.2",
+    "loaders.css": "^0.1.1",
+    "prompt": "^0.2.14",
+    "react": "^0.13.3",
+    "react-bootstrap": "^0.23.0",
+    "react-loaders": "^1.2.3"
+  }
+}
