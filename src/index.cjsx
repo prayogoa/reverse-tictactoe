@@ -9,7 +9,7 @@ player2 = new AI emitter
 state = GameState.initState()
 
 render = (state) ->
-	React.render <Board gameState={state} emitter={emitter} />, document.body
+	React.render <Board gameState={state} emitter={emitter} />, document.getElementById 'tictactoe'
 
 emitter.on 'player-move', (num) ->
 	state.doMove num
