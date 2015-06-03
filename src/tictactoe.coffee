@@ -10,9 +10,9 @@ board state is an array with size 9
 BOARD_SIZE = 9
 
 score = (board, depth) ->
-	if win board, 3
-		return 10 - depth
 	if win board, -3
+		return 10 - depth
+	if win board, 3
 		return depth - 10
 	return 0
 
@@ -20,7 +20,7 @@ end = (board, step, depth) ->
 	win(board, 3) or win(board, -3) or step+depth == BOARD_SIZE
 
 cmp = (s1, s2, depth) ->
-	if (depth%2) == 1 then s1.score > s2.score
+	if (depth%2) == 0 then s1.score > s2.score
 	else s1.score < s2.score
 
 minimax = (currState, step, depth) ->

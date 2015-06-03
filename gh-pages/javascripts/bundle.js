@@ -32585,10 +32585,10 @@ module.exports = require('./lib/React');
   BOARD_SIZE = 9;
 
   score = function(board, depth) {
-    if (win(board, 3)) {
+    if (win(board, -3)) {
       return 10 - depth;
     }
-    if (win(board, -3)) {
+    if (win(board, 3)) {
       return depth - 10;
     }
     return 0;
@@ -32599,7 +32599,7 @@ module.exports = require('./lib/React');
   };
 
   cmp = function(s1, s2, depth) {
-    if ((depth % 2) === 1) {
+    if ((depth % 2) === 0) {
       return s1.score > s2.score;
     } else {
       return s1.score < s2.score;
